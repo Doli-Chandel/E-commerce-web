@@ -73,6 +73,20 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Field
+              as={Input}
+              id="password"
+              name="password"
+              type="password"
+              error={errors.password && touched.password}
+            />
+            {errors.password && touched.password && (
+              <p className="text-sm text-destructive">{errors.password}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
             <Select
               value={values.role}

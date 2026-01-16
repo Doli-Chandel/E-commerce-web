@@ -20,6 +20,13 @@ const productSchema = Yup.object().shape({
     }),
   stock: Yup.number().min(0, 'Stock must be non-negative').required('Stock is required'),
   isVisible: Yup.boolean(),
+  image: Yup.string()
+    .url('Must be a valid URL')
+    .test('is-http-url', 'URL must start with http:// or https://', function (value) {
+      if (!value) return true; // Optional field
+      return value.startsWith('http://') || value.startsWith('https://');
+    })
+    .optional(),
 });
 
 interface ProductFormProps {
@@ -37,7 +44,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         salePrice: product.salePrice,
         stock: product.stock,
         isVisible: product.isVisible,
-        images: product.images.join(', '),
+        image: product.images && product.images.length > 0 ? product.images[0] : '', // Use first image URL
       }
     : {
         name: '',
@@ -46,7 +53,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         salePrice: 0,
         stock: 0,
         isVisible: true,
-        images: '',
+        image: '', // Image URL
       };
 
   return (
@@ -54,13 +61,21 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       initialValues={initialValues}
       validationSchema={productSchema}
       onSubmit={(values, { setSubmitting }) => {
-        const images = values.images
-          ? values.images.split(',').map((img) => img.trim()).filter(Boolean)
-          : [];
-        onSubmit({
-          ...values,
-          images,
-        });
+        const submitData: any = {
+          name: values.name,
+          description: values.description,
+          purchasePrice: values.purchasePrice,
+          salePrice: values.salePrice,
+          stock: values.stock,
+          isVisible: values.isVisible,
+        };
+
+        // If image URL is provided, send it
+        if (values.image) {
+          submitData.image = values.image;
+        }
+
+        onSubmit(submitData);
         setSubmitting(false);
       }}
     >
@@ -129,7 +144,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
 
             {values.purchasePrice > 0 && values.salePrice > 0 && (
               <div className="p-2 bg-muted rounded">
-                <Label>Margin: ${margin.toFixed(2)}</Label>
+                <Label>Margin: ₹ {margin.toFixed(2)}</Label>
               </div>
             )}
 
@@ -148,13 +163,30 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="images">Images (comma-separated URLs)</Label>
+              <Label htmlFor="image">Image URL</Label>
               <Field
                 as={Input}
-                id="images"
-                name="images"
-                placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
+                id="image"
+                name="image"
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                error={errors.image && touched.image}
               />
+              {errors.image && touched.image && (
+                <p className="text-sm text-destructive">{errors.image}</p>
+              )}
+              {values.image && (
+                <div className="mt-2">
+                  <img
+                    src={values.image}
+                    alt="Preview"
+                    className="max-w-xs max-h-48 object-contain border rounded"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2">

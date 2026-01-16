@@ -75,7 +75,7 @@ export function ProductsPage() {
               <CardContent>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-2xl font-bold">${product.salePrice.toFixed(2)}</p>
+                    <p className="text-2xl font-bold">₹ {product.salePrice.toFixed(2)}</p>
                     {product.stock === 0 && (
                       <Badge variant="destructive" className="mt-2">
                         Out of Stock

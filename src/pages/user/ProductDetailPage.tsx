@@ -93,7 +93,7 @@ export function ProductDetailPage() {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-3xl font-bold">
-                  ${product.salePrice ? product.salePrice.toFixed(2) : '0.00'}
+                  ₹ {product.salePrice ? product.salePrice.toFixed(2) : '0.00'}
                 </p>
                 {product.stock === 0 && (
                   <Badge variant="destructive" className="mt-2">
