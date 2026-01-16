@@ -36,3 +36,15 @@ export const USER_URLS = {
   UPDATE: (id: string) => `/users/${id}`,
   DELETE: (id: string) => `/users/${id}`,
 };
+
+// Dashboard API URLs
+export const DASHBOARD_URLS = {
+  SUMMARY: '/dashboard/summary',
+  CHARTS: '/dashboard/charts',
+};
+
+// Notifications API URLs
+export const NOTIFICATION_URLS = {
+  GET_ALL: '/notifications',
+  MARK_AS_READ: (id: string) => `/notifications/${id}/read`,
+};

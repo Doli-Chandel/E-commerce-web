@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ProductForm } from '@/features/products/ProductForm';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import type { Product } from '@/types';
@@ -31,7 +30,7 @@ export function ProductsPage() {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const data = await productsAPI.getAllAdmin();
+      const data = await productsAPI.getAll();
       setProducts(data);
     } catch (error: any) {
       toast.error(error.response?.data?.message || error.message || 'Failed to load products');
@@ -122,9 +121,9 @@ export function ProductsPage() {
                 {products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>${product.purchasePrice.toFixed(2)}</TableCell>
-                    <TableCell>${product.salePrice.toFixed(2)}</TableCell>
-                    <TableCell>${product.margin.toFixed(2)}</TableCell>
+                    <TableCell>{product.purchasePrice.toFixed(2)}</TableCell>
+                    <TableCell>{product.salePrice.toFixed(2)}</TableCell>
+                    <TableCell>{product.margin.toFixed(2)}</TableCell>
                     <TableCell>{product.stock}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

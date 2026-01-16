@@ -10,6 +10,7 @@ import { authAPI } from '@/services/api';
 
 const resetPasswordSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
+  newPassword: Yup.string().min(6, 'Password must be at least 6 characters').required('New password is required'),
 });
 
 export function ResetPasswordPage() {
@@ -18,18 +19,18 @@ export function ResetPasswordPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Reset Password</CardTitle>
-          <CardDescription>Enter your email to receive a password reset link</CardDescription>
+          <CardDescription>Enter your email and new password to reset your password</CardDescription>
         </CardHeader>
         <CardContent>
           <Formik
-            initialValues={{ email: '' }}
+            initialValues={{ email: '', newPassword: '' }}
             validationSchema={resetPasswordSchema}
             onSubmit={async (values, { setSubmitting, setFieldError }) => {
               try {
-                await authAPI.resetPassword(values.email);
-                toast.success('Password reset link sent to your email');
+                await authAPI.resetPassword(values.email, values.newPassword);
+                toast.success('Password reset successfully');
               } catch (error: any) {
-                toast.error(error.response?.data?.message || error.message || 'Failed to send reset link');
+                toast.error(error.response?.data?.message || error.message || 'Failed to reset password');
                 setFieldError('email', error.message);
               } finally {
                 setSubmitting(false);
@@ -53,8 +54,23 @@ export function ResetPasswordPage() {
                   )}
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Field
+                    as={Input}
+                    id="newPassword"
+                    name="newPassword"
+                    type="password"
+                    placeholder="Enter new password"
+                    error={errors.newPassword && touched.newPassword}
+                  />
+                  {errors.newPassword && touched.newPassword && (
+                    <p className="text-sm text-destructive">{errors.newPassword}</p>
+                  )}
+                </div>
+
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+                  {isSubmitting ? 'Resetting...' : 'Reset Password'}
                 </Button>
 
                 <div className="text-center text-sm">
