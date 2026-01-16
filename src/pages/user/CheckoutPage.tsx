@@ -56,12 +56,21 @@ export function CheckoutPage() {
               validationSchema={checkoutSchema}
               onSubmit={async (values, { setSubmitting }) => {
                 try {
+                  // Validate that all cart items have valid product IDs
+                  const invalidItems = items.filter(item => !item.product || !item.product.id);
+                  if (invalidItems.length > 0) {
+                    toast.error('Some items in your cart are invalid. Please refresh and try again.');
+                    return;
+                  }
+
                   await ordersAPI.create(items, values);
                   dispatch(clearCart());
                   toast.success('Order placed successfully!');
                   navigate('/');
                 } catch (error: any) {
-                  toast.error(error.response?.data?.message || error.message || 'Failed to place order');
+                  const errorMessage = error.response?.data?.message || error.message || 'Failed to place order';
+                  toast.error(errorMessage);
+                  console.error('Order creation error:', error);
                 } finally {
                   setSubmitting(false);
                 }

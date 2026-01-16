@@ -20,8 +20,8 @@ export const fetchOrderById = createAsyncThunk('orders/fetchById', async (id: st
 
 export const createOrder = createAsyncThunk(
   'orders/create',
-  async ({ items, userId, userEmail }: { items: CartItem[]; userId: string; userEmail: string }) => {
-    const response = await ordersAPI.create(items, userId, userEmail);
+  async ({ items, shippingInfo }: { items: CartItem[]; shippingInfo?: any }) => {
+    const response = await ordersAPI.create(items, shippingInfo);
     return response;
   }
 );

@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAppDispatch } from '@/app/hooks';
 import { loginUser, setUser } from '@/features/auth/authSlice';
 import { authAPI } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 const loginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -18,7 +19,7 @@ const loginSchema = Yup.object().shape({
 export function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
+  const { user, login } = useAuth();
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -32,10 +33,8 @@ export function LoginPage() {
             validationSchema={loginSchema}
             onSubmit={async (values, { setSubmitting, setFieldError }) => {
               try {
-                const result = await authAPI.login(values.email, values.password);
-                
-                dispatch(setUser(result.user));
-                if (result.user.role === 'ADMIN') {
+                await login(values.email, values.password);
+                if (user?.role === 'ADMIN') {
                   navigate('/admin/dashboard');
                 } else {
                   navigate('/user/products');

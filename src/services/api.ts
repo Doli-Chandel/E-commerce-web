@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { User, Product, Order, CartItem } from '@/types';
-import { AUTH_URLS, PRODUCT_URLS, ORDER_URLS, USER_URLS } from './apiUrls';
+import { AUTH_URLS, PRODUCT_URLS, ORDER_URLS, USER_URLS, DASHBOARD_URLS, NOTIFICATION_URLS } from './apiUrls';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -41,7 +41,9 @@ export const authAPI = {
 
   register: async (email: string, password: string, name: string): Promise<{ user: User; token: string }> => {
     const response = await api.post(AUTH_URLS.REGISTER, { email, password, name });
-    const { user, token } = response.data;
+    // Handle different response formats
+    const data = response.data?.data || response.data;
+    const { user, token } = data;
     localStorage.setItem('token', token);
     return { user, token };
   },
@@ -53,6 +55,10 @@ export const authAPI = {
 
   updateProfile: async (data: { name?: string; email?: string }): Promise<User> => {
     const response = await api.put(AUTH_URLS.UPDATE_PROFILE, data);
+    // Handle different response formats
+    if (response.data && response.data.data) {
+      return response.data.data.user || response.data.data;
+    }
     return response.data;
   },
 
@@ -60,8 +66,8 @@ export const authAPI = {
     await api.put(AUTH_URLS.UPDATE_PASSWORD, { oldPassword, newPassword });
   },
 
-  resetPassword: async (email: string): Promise<void> => {
-    await api.post(AUTH_URLS.RESET_PASSWORD, { email });
+  resetPassword: async (email: string, newPassword: string): Promise<void> => {
+    await api.post(AUTH_URLS.RESET_PASSWORD, { email, newPassword });
   },
 };
 
@@ -95,11 +101,19 @@ export const productsAPI = {
 
   create: async (data: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'margin'>): Promise<Product> => {
     const response = await api.post(PRODUCT_URLS.CREATE, data);
+    // Handle different response formats
+    if (response.data && response.data.data) {
+      return response.data.data;
+    }
     return response.data;
   },
 
   update: async (id: string, data: Partial<Product>): Promise<Product> => {
     const response = await api.put(PRODUCT_URLS.UPDATE(id), data);
+    // Handle different response formats
+    if (response.data && response.data.data) {
+      return response.data.data;
+    }
     return response.data;
   },
 
@@ -135,8 +149,22 @@ export const ordersAPI = {
     return response.data;
   },
 
-  create: async (items: CartItem[], shippingInfo: any): Promise<Order> => {
-    const response = await api.post(ORDER_URLS.CREATE, { items, shippingInfo });
+  create: async (items: CartItem[], shippingInfo?: any): Promise<Order> => {
+    // Transform cart items to backend format: [{ productId, quantity }]
+    const orderItems = items.map((item) => {
+      if (!item.product || !item.product.id) {
+        throw new Error(`Invalid cart item: product ID is missing`);
+      }
+      return {
+        productId: item.product.id,
+        quantity: item.quantity,
+      };
+    });
+    
+    // Log for debugging (remove in production)
+    console.log('Creating order with items:', orderItems);
+    
+    const response = await api.post(ORDER_URLS.CREATE, { items: orderItems });
     // Handle different response formats
     if (response.data && response.data.data) {
       return response.data.data;
@@ -145,7 +173,7 @@ export const ordersAPI = {
   },
 
   proceed: async (id: string): Promise<Order> => {
-    const response = await api.put(ORDER_URLS.PROCEED(id));
+    const response = await api.patch(ORDER_URLS.PROCEED(id));
     // Handle different response formats
     if (response.data && response.data.data) {
       return response.data.data;
@@ -154,7 +182,7 @@ export const ordersAPI = {
   },
 
   cancel: async (id: string): Promise<Order> => {
-    const response = await api.put(ORDER_URLS.CANCEL(id));
+    const response = await api.patch(ORDER_URLS.CANCEL(id));
     // Handle different response formats
     if (response.data && response.data.data) {
       return response.data.data;
@@ -187,6 +215,53 @@ export const usersAPI = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(USER_URLS.DELETE(id));
+  },
+};
+
+// Dashboard API
+export const dashboardAPI = {
+  getSummary: async (): Promise<{
+    totalOrders: number;
+    totalRevenue: number;
+    totalProfit: number;
+    totalLoss: number;
+  }> => {
+    const response = await api.get(DASHBOARD_URLS.SUMMARY);
+    if (response.data && response.data.data) {
+      return response.data.data;
+    }
+    return response.data;
+  },
+
+  getCharts: async (days: number = 30): Promise<{
+    ordersPerDay: any[];
+    revenuePerDay: any[];
+    profitPerDay: any[];
+  }> => {
+    const response = await api.get(DASHBOARD_URLS.CHARTS, { params: { days } });
+    if (response.data && response.data.data) {
+      return response.data.data;
+    }
+    return response.data;
+  },
+};
+
+// Notifications API
+export const notificationsAPI = {
+  getAll: async (params?: { page?: number; limit?: number; isRead?: boolean }): Promise<any[]> => {
+    const response = await api.get(NOTIFICATION_URLS.GET_ALL, { params });
+    if (response.data && response.data.data) {
+      if (Array.isArray(response.data.data)) {
+        return response.data.data;
+      } else if (response.data.data.notifications) {
+        return response.data.data.notifications;
+      }
+    }
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  markAsRead: async (id: string): Promise<void> => {
+    await api.patch(NOTIFICATION_URLS.MARK_AS_READ(id));
   },
 };
 

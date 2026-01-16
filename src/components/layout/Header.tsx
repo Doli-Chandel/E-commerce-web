@@ -19,7 +19,7 @@ export function Header() {
   const { items } = useAppSelector((state) => state.cart);
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
-
+console.log(isAuthenticated, user);
   const handleLogout = () => {
     logout();
     navigate('/auth/login');

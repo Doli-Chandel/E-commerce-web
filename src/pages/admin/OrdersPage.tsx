@@ -102,7 +102,7 @@ export function OrdersPage() {
                       </div>
                     </TableCell>
                     <TableCell>{order.orderItems.length} item(s)</TableCell>
-                    <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
+                    <TableCell>{order.totalAmount.toFixed(2)}</TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
                     <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
