@@ -10,6 +10,7 @@ const userSchema = Yup.object().shape({
   name: Yup.string().required('Name is required'),
   email: Yup.string().email('Invalid email').required('Email is required'),
   role: Yup.string().oneOf(['ADMIN', 'USER']).required('Role is required'),
+  password: Yup.string().required('Password is required'),
 });
 
 interface UserFormProps {
@@ -24,11 +25,13 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
         name: user.name,
         email: user.email,
         role: user.role,
+        password: user.password,
       }
     : {
         name: '',
         email: '',
-        role: 'user' as const,
+        role: 'USER' as const,
+        password: '',
       };
 
   return (
@@ -79,8 +82,8 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="user">User</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="USER">User</SelectItem>
+                <SelectItem value="ADMIN">Admin</SelectItem>
               </SelectContent>
             </Select>
             {errors.role && touched.role && (
